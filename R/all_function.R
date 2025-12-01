@@ -58,7 +58,7 @@
 ghs_missing_gibbs <- function(Y, n_iter = 3000, burnin = 1000, thin = 1, eta = 1e-2,
                               verbose = TRUE, store_Z = FALSE, seed = NULL,
                               a0 = 1e-2, b0 = 1e-2,
-                              symmetrize = c("average","min","max")
+                              symmetrize = "average"
                               ) {
   ghs_missing_gibbs_cpp( Y, n_iter, burnin, thin, verbose,
         store_Z, a0, b0, symmetrize)
