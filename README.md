@@ -6,6 +6,6 @@ Install the development version directly from GitHub:
 
 ```r
 # install.packages("devtools")
-devtools::install_github("tienmt/heavylasso")
-library(heavylasso)
+devtools::install_github("tienmt/ghscenmis")
+library(ghscenmis)
 ````
