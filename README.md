@@ -115,7 +115,8 @@ fit$Omega_mean
 
 ## **References**
 
-* Li, Q., & T. (2020). *Graphical Horseshoe: Bayesian Estimation of Sparse Precision Matrices*.
+* Li, Y., Craig, B. A., and Bhadra, A. (2019). The graphical horseshoe estimator for inverse
+covariance matrices. Journal of Computational and Graphical Statistics, 28(3):747–757.*.
 
 ---
 
