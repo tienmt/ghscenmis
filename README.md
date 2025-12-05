@@ -18,7 +18,7 @@ library(ghscenmis)
 or install with vignettes "tutorial"
 ```r
 devtools::install_github(
-    "tienmt/tobitbayes", 
+    "tienmt/ghscenmis", 
     build_vignettes = TRUE,
     build_opts = c("--no-resave-data", "--no-manual")
 )
