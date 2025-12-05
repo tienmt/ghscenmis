@@ -15,7 +15,13 @@ You can install the development version directly from GitHub using `devtools`:
 devtools::install_github("tienmt/ghscenmis")
 library(ghscenmis)
 ```
-
+or install with vignettes "tutorial"
+```r
+devtools::install_github(
+    "tienmt/tobitbayes", 
+    build_vignettes = TRUE,
+    build_opts = c("--no-resave-data", "--no-manual")
+)
 ---
 
 ## **Example 1: Sparse Graphical Model with Censored Data**
