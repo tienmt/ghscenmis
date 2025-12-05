@@ -22,6 +22,8 @@ devtools::install_github(
     build_vignettes = TRUE,
     build_opts = c("--no-resave-data", "--no-manual")
 )
+```
+
 ---
 
 ## **Example 1: Sparse Graphical Model with Censored Data**
