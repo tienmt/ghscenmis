@@ -1,0 +1,150 @@
+
+
+---
+title: "Sparse Graphical Models with Censored or Missing Data using GHScenmis"
+author: "The Tien Mai"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Sparse Graphical Models with Censored or Missing Data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 6,
+  fig.height = 4
+)
+library(ghscenmis)
+```
+---
+```
+# 1 Introduction
+
+The **GHScenmis** package provides methods for estimating **sparse precision matrices**, also known as Gaussian graphical models, when data are affected by **censoring** or **missingness**. Conventional sparse estimators assume complete data, but many real-world datasets contain observations that fall below/above detection limits or are missing at random.
+
+This vignette demonstrates how to use the package for:
+
+1. Censored multivariate Gaussian data
+2. Data with missing values
+
+Both procedures rely on the **Graphical Horseshoe (GHS)** prior with an efficient Gibbs sampler.
+
+# 2 Installation
+
+The development version can be installed from GitHub:
+
+```r
+# install.packages("devtools")
+devtools::install_github("tienmt/ghscenmis")
+library(ghscenmis)
+```
+
+# 3 Example: Censored Data
+
+This section illustrates fitting a sparse precision matrix when the data are **left-censored**. We generate synthetic multivariate normal data, apply censoring, and fit the censored GHS model.
+
+## 3.1 Data generation
+
+```{r example-censored-data}
+set.seed(123)
+p <- 10
+n <- 200
+
+# True covariance with a 3-variable block
+Sigma_true <- diag(p)
+Sigma_true[1, 2] <- Sigma_true[2, 1] <-
+  Sigma_true[1, 3] <- Sigma_true[3, 1] <-
+  Sigma_true[2, 3] <- Sigma_true[3, 2] <- 0.5
+
+Omega_true <- solve(Sigma_true)
+
+# Generate data
+Z <- MASS::mvrnorm(n, rep(0, p), Sigma_true)
+
+# Apply left-censoring at variable-specific thresholds
+cvec <- rep(c(-0.5, 0.5), length.out = p)
+Y <- pmax(Z, matrix(cvec, n, p, byrow = TRUE))
+```
+
+## 3.2 Fitting the censored GHS model
+
+```{r fit-censored}
+fit <- censored_GHS(
+  Ytilde = Y,
+  cvec = cvec,
+  n_iter = 3000,
+  burn = 500,
+  verbose = FALSE
+)
+
+# Posterior mean precision matrix
+Omega_hat <- fit$Omega_mean
+
+# Edge selection based on posterior credible intervals
+edges <- get_edge_selection_ci(fit$Omega_draws)$E_est
+```
+
+## 3.3 Evaluating performance
+
+```{r evaluate-censored}
+# True adjacency
+E_true <- 1 * (abs(Omega_true) > 1e-6)
+diag(E_true) <- 0
+
+metrics <- get_edge_metrics(E_true, edges)
+metrics
+```
+
+The results include common edge selection metrics such as TPR, FPR, Precision, and F1.
+Users may also examine posterior draws or credible intervals for deeper analysis.
+
+# 4 Example: Missing Data
+
+The package also provides a Gibbs sampler for datasets containing **missing values** (coded as `NA`). Missing entries are imputed internally.
+
+## 4.1 Generating incomplete data
+
+```{r data-missing}
+set.seed(123)
+Y <- matrix(rnorm(100 * 5), 100, 5)
+Y[sample(length(Y), 10)] <- NA  # introduce missing values
+```
+
+## 4.2 Fitting the missing-data GHS model
+
+```{r fit-missing}
+fit_mis <- ghs_missing_gibbs(Y = Y)
+
+Omega_mis <- fit_mis$Omega_mean
+Omega_mis
+```
+
+Posterior samples of the precision matrix are stored in `fit_mis$Omega_draws`, and edge selection can be performed similarly using:
+
+```r
+get_edge_selection_ci(fit_mis$Omega_draws)
+```
+
+# 5 Key Functions
+
+The following functions provide the core functionality:
+
+| Function                  | Purpose                                                          |
+| ------------------------- | ---------------------------------------------------------------- |
+| `censored_GHS()`          | Estimate sparse precision matrices with censored data.           |
+| `ghs_missing_gibbs()`     | Gibbs sampler for sparse estimation with missing values.         |
+| `get_edge_selection_ci()` | Edge selection using posterior credible intervals.               |
+| `get_edge_metrics()`      | Standard edge-selection metrics such as TPR, FPR, Precision, F1. |
+
+# 6 References
+
+Li, Y., Craig, B. A., & Bhadra, A. (2019).
+*The graphical horseshoe estimator for inverse covariance matrices.*
+Journal of Computational and Graphical Statistics, 28(3), 747–757.
+
+
